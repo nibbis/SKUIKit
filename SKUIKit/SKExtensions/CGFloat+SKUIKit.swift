@@ -24,7 +24,7 @@
 
 import SpriteKit
 
-public extension CGFloat {
+extension CGFloat {
 
     func clamped(_ v1: CGFloat, _ v2: CGFloat) -> CGFloat {
         let min = v1 < v2 ? v1 : v2
