@@ -86,8 +86,6 @@ class SKGridView: SKSpriteNode {
     }
     
     func reloadData() {
-        dragDropManager.removeAllDropTargets()
-        
         guard let datasource = datasource, let delegate = delegate else {
             return
         }
@@ -107,13 +105,15 @@ class SKGridView: SKSpriteNode {
         if let cells = cells {
             for rowIndex in 0..<cells.count {
                 for columnIndex in 0..<cells[rowIndex].count {
-                    cells[rowIndex][columnIndex].removeFromParent()
+                    let cell = cells[rowIndex][columnIndex]
+                    cell.removeDropTarget()
+                    cell.removeAllChildren()
+                    cell.removeFromParent()
                 }
             }
             
             self.cells!.removeAll()
         }
-        
         
         for rowIndex in 0..<numberOfRows {
             
@@ -238,7 +238,7 @@ extension SKGridView {
             }
             
             let touchTime = touch.timestamp - startTime
-            if let selectedCell = selectedCell, touchTime > 0.25 {
+            if let selectedCell = selectedCell, touchTime > 0.15 {
                 ignoreTouches = true
                 handleLongPress(cell: selectedCell)
             }

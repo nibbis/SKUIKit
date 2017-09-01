@@ -126,9 +126,13 @@ extension SKSpriteNode {
         SKDragDropManager.shared.dragNode = dragNode
     }
     
-    func setAsDropTarget(dropAction: SKDropTargetAction?) {
+    func addDropTarget(dropAction: SKDropTargetAction?) {
         let dropTarget = SKDropTarget()
         dropTarget.dropAction = dropAction
         SKDragDropManager.shared.dropTargets[self.hash] = dropTarget
+    }
+    
+    func removeDropTarget() {
+        SKDragDropManager.shared.dropTargets.removeValue(forKey: self.hash)
     }
 }
