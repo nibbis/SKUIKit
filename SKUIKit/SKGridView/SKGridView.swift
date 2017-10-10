@@ -26,7 +26,7 @@ import SpriteKit
 protocol SKGridViewDatasource {
 
     func numberOfRows(gridView: SKGridView) -> Int
-    func numberofColumns(gridView: SKGridView) -> Int
+    func numberOfColumns(gridView: SKGridView) -> Int
     func gridView(gridView: SKGridView, cellFor row: Int, column: Int) -> SKGridViewCell
 }
 
@@ -50,6 +50,8 @@ class SKGridView: SKSpriteNode {
     var isVisible: Bool {
         return self.parent != nil
     }
+    private(set) var numberOfRows = 0
+    private(set) var numberOfColumns = 0
     
     private var parentNode: SKSpriteNode!
     
@@ -94,8 +96,8 @@ class SKGridView: SKSpriteNode {
             layout.center.equalTo(self)
         }
         
-        let numberOfRows = datasource.numberOfRows(gridView: self)
-        let numberOfColumns = datasource.numberofColumns(gridView: self)
+        numberOfRows = datasource.numberOfRows(gridView: self)
+        numberOfColumns = datasource.numberOfColumns(gridView: self)
         
         var newCells = [[SKGridViewCell]]()
         var currentCellXOffset: CGFloat = 0
