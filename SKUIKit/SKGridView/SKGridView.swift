@@ -33,7 +33,7 @@ protocol SKGridViewDatasource {
 protocol SKGridViewDelegate {
     
     func gridView(gridView: SKGridView, didTap row: Int, column: Int)
-    func gridView(gridView: SKGridView, didLongPress row: Int, column: Int)
+    func gridView(gridView: SKGridView, didDrag row: Int, column: Int)
     func gridView(gridView: SKGridView, heightFor row: Int) -> CGFloat
     func gridView(gridView: SKGridView, widthFor column: Int) -> CGFloat
 }
@@ -67,7 +67,6 @@ class SKGridView: SKSpriteNode {
     // UITouch vars
     fileprivate var startLocation: CGPoint!
     fileprivate var startTime: TimeInterval!
-    fileprivate let highlightActionKey = "highlightAction"
     fileprivate var ignoreTouches = false
     
     // Managers
@@ -185,7 +184,7 @@ class SKGridView: SKSpriteNode {
         guard let cell = cell(row: row, columm: column) else {
             return
         }
-        cell.run(SKAction.afterDelay(0.05, runBlock: {
+        cell.run(SKAction.afterDelay(0.10, runBlock: {
             cell.isHighlighted = false
         }))
     }
@@ -207,13 +206,6 @@ extension SKGridView {
             if let cell = cell(location: location) {
                 selectedCell = cell
                 startTime = touch.timestamp
-                
-                let highlightAction = SKAction.afterDelay(0.10, runBlock: {
-                    if let selectedCell = self.selectedCell {
-                        selectedCell.isHighlighted = true
-                    }
-                })
-                cell.run(highlightAction, withKey:highlightActionKey)
             }
         }
     }
@@ -233,19 +225,13 @@ extension SKGridView {
             let distanceY = abs(location.y - startLocation.y)
             let distanceX = abs(location.x - startLocation.x)
             
-            if let cell = cell(location: startLocation), distanceX > cell.size.width / 2 || distanceY > cell.size.height / 2 {
-                selectedCell = nil
-                cell.removeAction(forKey: highlightActionKey)
-                cell.isHighlighted = false
-            }
-            
+            let distancePercentage: CGFloat = 0.1
             let touchTime = touch.timestamp - startTime
-            if let selectedCell = selectedCell, touchTime > 0.15 {
+            if let selectedCell = selectedCell, distanceX > selectedCell.size.width * distancePercentage || distanceY > selectedCell.size.height * distancePercentage || touchTime > 0.25 {
                 ignoreTouches = true
-                handleLongPress(cell: selectedCell)
+                handleDrag(cell: selectedCell)
             }
         }
-        
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -269,18 +255,19 @@ extension SKGridView {
         guard let delegate = delegate, let rowAndColumn = cellRowAndColumn(cell: cell) else {
             return
         }
+        selectedCell?.isHighlighted = true
         selectedCell = nil
         delegate.gridView(gridView: self, didTap: rowAndColumn.row, column: rowAndColumn.column)
     }
     
-    private func handleLongPress(cell: SKGridViewCell) {
+    private func handleDrag(cell: SKGridViewCell) {
         guard let delegate = delegate, let rowAndColumn = cellRowAndColumn(cell: cell) else {
             return
         }
         selectedCell = nil
-        delegate.gridView(gridView: self, didLongPress: rowAndColumn.row, column: rowAndColumn.column)
+        delegate.gridView(gridView: self, didDrag: rowAndColumn.row, column: rowAndColumn.column)
     }
-    
+        
     private func cell(location: CGPoint) -> SKGridViewCell? {
         var foundCell: SKGridViewCell?
         let selectedNodes = nodes(at: location)
